@@ -1,0 +1,11 @@
+enclave {
+  /* the ECALLs visible to the untrusted host */
+  trusted {
+    public void ecall_add_one([in, count=size] float* input,
+                              size_t size,
+                              [out, count=size] float* output);
+    public void ecall_add_noise([in, count=size] float* input,
+                                size_t size,
+                                [out, count=size] float* output);
+  };
+};

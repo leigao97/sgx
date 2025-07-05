@@ -1,0 +1,61 @@
+# cmake_minimum_required(VERSION 3.1)
+
+# find_package(Torch REQUIRED)
+
+# add_library(ops_sim SHARED app/ops_sim.cpp)
+
+# target_include_directories(ops_sim
+#   PRIVATE
+#     ${Python3_INCLUDE_DIRS}
+#     $ENV{CONDA_PREFIX}/include/python3.12
+# )
+
+# target_compile_features(ops_sim PRIVATE cxx_std_14)
+# target_link_libraries(ops_sim "${TORCH_LIBRARIES}")
+
+
+cmake_minimum_required(VERSION 3.26)
+project(ops_sim_sgx LANGUAGES CXX)
+
+
+find_package(Torch REQUIRED)
+
+if(NOT DEFINED ENV{SGX_SDK})
+  message(FATAL_ERROR "Please run: source /usr/sgxsdk/environment")
+endif()
+set(SGX_SDK $ENV{SGX_SDK})
+
+include_directories(
+  ${SGX_SDK}/include
+)
+link_directories(
+  ${SGX_SDK}/lib64
+)
+
+# Enclave target (unchanged)
+add_enclave(Enclave
+  SOURCES enclave/Enclave.cpp
+  EDL     e.edl
+)
+
+# Single shared library with both .cpp files
+add_library(ops_sim SHARED
+  app/ops_sim.cpp
+  app/ops_sgx.cpp
+)
+
+target_include_directories(ops_sim PRIVATE
+  ${Torch_INCLUDE_DIRS}
+  ${Python3_INCLUDE_DIRS}
+)
+
+target_link_libraries(ops_sim PRIVATE
+  ${TORCH_LIBRARIES}
+  ${Python3_LIBRARIES}
+  sgx_urts
+  ops_sim_enclave
+)
+
+target_compile_definitions(ops_sim PRIVATE
+  ${TORCH_DEFINITIONS}
+)

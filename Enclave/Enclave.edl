@@ -1,11 +1,20 @@
+/* Enclave.edl - Top EDL file. */
+
 enclave {
-  /* the ECALLs visible to the untrusted host */
-  trusted {
-    public void ecall_add_one([in, count=size] float* input,
-                              size_t size,
-                              [out, count=size] float* output);
-    public void ecall_add_noise([in, count=size] float* input,
-                                size_t size,
-                                [out, count=size] float* output);
-  };
+    trusted {
+        public int ecall_compute_secrete_operation([user_check] int* inp, int size);
+       
+		/* Newly added */
+		public void ecall_nativeMatMul([user_check] float* w, [user_check] int* dimW, [user_check] float* inp, [user_check] int* dimInp, [user_check] float* out);
+
+		public void ecall_precompute([user_check] float* weight, [user_check] int* dim, int batch);
+		public void ecall_addNoise([user_check] float* inp, [user_check] int* dim, [user_check] float* out);
+		public void ecall_removeNoise([user_check] float* inp, [user_check] int* dim, [user_check] float* out);
+
+};
+    
+    untrusted {
+        void ocall_print_string([in, string] const char *str);
+    };
+
 };
